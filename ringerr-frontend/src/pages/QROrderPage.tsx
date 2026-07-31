@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
-import { Minus, Plus, ShoppingCart, CheckCircle2, Loader2, Zap, ChevronRight, Globe } from 'lucide-react'
+import { Minus, Plus, ShoppingCart, CheckCircle2, Loader2, Zap, ChevronRight, Globe, Bell } from 'lucide-react'
+import { Client } from '@stomp/stompjs'
+import SockJS from 'sockjs-client'
 
 interface TableInfo { id: number; tableNumber: number; capacity: number; status: string }
 interface MenuItem  {
@@ -85,6 +87,95 @@ function loadRazorpayScript(): Promise<boolean> {
   })
 }
 
+// Pickup status banner shown after order is placed
+function PickupStatus({ orderId, onOrderMore }: { orderId: number | null; onOrderMore: () => void }) {
+  const [orderReady, setOrderReady] = useState(false)
+  const stompRef = useRef<Client | null>(null)
+
+  useEffect(() => {
+    if (!orderId) return
+    const client = new Client({
+      webSocketFactory: () => new SockJS('/ws'),
+      reconnectDelay: 5000,
+      onConnect: () => {
+        client.subscribe('/topic/orders', (msg) => {
+          try {
+            const order = JSON.parse(msg.body)
+            if (order.id === orderId && order.status === 'READY') {
+              setOrderReady(true)
+            }
+          } catch { /* ignore */ }
+        })
+      },
+    })
+    client.activate()
+    stompRef.current = client
+    return () => { client.deactivate() }
+  }, [orderId])
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#09090B' }}>
+      <div className="card p-10 text-center max-w-sm w-full">
+        {/* Icon */}
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+          style={{
+            background: orderReady ? 'rgba(34,197,94,0.15)' : 'rgba(255,138,0,0.12)',
+            border: `1px solid ${orderReady ? 'rgba(34,197,94,0.3)' : 'rgba(255,138,0,0.25)'}`,
+          }}
+        >
+          {orderReady
+            ? <CheckCircle2 size={32} style={{ color: '#22C55E' }} />
+            : <Bell size={28} style={{ color: '#FF8A00' }} className="animate-pulse" />
+          }
+        </div>
+
+        {/* Title */}
+        <h2 className="text-xl font-bold mb-2" style={{ color: '#F9FAFB' }}>
+          {orderReady ? 'Your order is READY for pickup!' : 'Order Placed!'}
+        </h2>
+
+        {/* Subtitle / pulsing status */}
+        {orderReady ? (
+          <p className="text-sm mb-6" style={{ color: '#22C55E' }}>
+            Please collect your order from the counter.
+          </p>
+        ) : (
+          <div className="mb-6">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <span
+                className="w-2 h-2 rounded-full animate-pulse"
+                style={{ background: '#FF8A00' }}
+              />
+              <p className="text-sm" style={{ color: '#9CA3AF' }}>
+                Your order is being prepared
+              </p>
+            </div>
+            {/* Progress dots */}
+            <div className="flex items-center justify-center gap-1.5">
+              {[0, 1, 2].map(i => (
+                <span
+                  key={i}
+                  className="w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{
+                    background: '#FF8A00',
+                    animationDelay: `${i * 0.2}s`,
+                    opacity: 0.7,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button onClick={onOrderMore} className="btn-primary w-full py-3">
+          Order More
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function QROrderPage() {
   const { token } = useParams<{ token: string }>()
   const [lang, setLang] = useState<'en' | 'ta'>('en')
@@ -96,6 +187,7 @@ export default function QROrderPage() {
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState('')
   const [orderPlaced, setOrderPlaced] = useState(false)
+  const [placedOrderId, setPlacedOrderId] = useState<number | null>(null)
   const [placing, setPlacing]         = useState(false)
   const [activeCategory, setActiveCategory] = useState('All')
   const [vegFilter, setVegFilter]     = useState<'all' | 'veg' | 'nonveg'>('all')
@@ -129,14 +221,18 @@ export default function QROrderPage() {
     qty <= 0 ? setCart(p => p.filter(c => c.menuItem.id !== id))
              : setCart(p => p.map(c => c.menuItem.id === id ? { ...c, quantity: qty } : c))
 
-  const submitOrder = async () => {
-    if (!table || !cart.length) return
-    await axios.post('/api/public/orders', {
+  // Returns the created order's ID
+  const submitOrder = async (): Promise<number | null> => {
+    if (!table || !cart.length) return null
+    const res = await axios.post('/api/public/orders', {
       tableId: table.id,
       items: cart.map(c => ({ menuItemId: c.menuItem.id, quantity: c.quantity, notes: c.notes })),
     })
+    const id: number = res.data?.id ?? null
+    setPlacedOrderId(id)
     setOrderPlaced(true)
     setCart([])
+    return id
   }
 
   const handlePayAndOrder = async () => {
@@ -237,17 +333,10 @@ export default function QROrderPage() {
   )
 
   if (orderPlaced) return (
-    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#09090B' }}>
-      <div className="card p-10 text-center max-w-sm w-full">
-        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-          style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
-          <CheckCircle2 size={32} style={{ color: '#22C55E' }} />
-        </div>
-        <h2 className="text-xl font-bold mb-2" style={{ color: '#F9FAFB' }}>{t.orderPlaced}</h2>
-        <p className="text-sm mb-6" style={{ color: '#9CA3AF' }}>{t.orderPlacedSub}</p>
-        <button onClick={() => setOrderPlaced(false)} className="btn-primary w-full py-3">{t.orderMore}</button>
-      </div>
-    </div>
+    <PickupStatus
+      orderId={placedOrderId}
+      onOrderMore={() => { setOrderPlaced(false); setPlacedOrderId(null) }}
+    />
   )
 
   return (

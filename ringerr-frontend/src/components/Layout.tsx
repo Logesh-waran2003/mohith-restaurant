@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, UtensilsCrossed, ClipboardList, ChefHat,
   Users, TableProperties, Bell, Search, ChevronLeft,
-  ChevronRight, LogOut, Settings, Store, Zap
+  ChevronRight, LogOut, Settings, Store, Zap, BarChart2
 } from 'lucide-react'
 
 const nav = [
@@ -12,6 +12,7 @@ const nav = [
   { to: '/menu',      icon: UtensilsCrossed, label: 'Menu'      },
   { to: '/orders',    icon: ClipboardList,   label: 'Orders'    },
   { to: '/kitchen',   icon: ChefHat,         label: 'Kitchen'   },
+  { to: '/reports',   icon: BarChart2,        label: 'Reports'   },
   { to: '/staff',     icon: Users,           label: 'Staff'     },
 ]
 

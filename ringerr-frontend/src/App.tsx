@@ -9,6 +9,7 @@ import OrdersPage from './pages/OrdersPage'
 import KOTPage from './pages/KOTPage'
 import StaffPage from './pages/StaffPage'
 import QROrderPage from './pages/QROrderPage'
+import ReportsPage from './pages/ReportsPage'
 
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('token')
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/menu"      element={<ProtectedLayout><MenuPage /></ProtectedLayout>} />
         <Route path="/orders"    element={<ProtectedLayout><OrdersPage /></ProtectedLayout>} />
         <Route path="/kitchen"   element={<ProtectedLayout><KOTPage /></ProtectedLayout>} />
+        <Route path="/reports"   element={<ProtectedLayout><ReportsPage /></ProtectedLayout>} />
         <Route path="/staff"     element={<ProtectedLayout><StaffPage /></ProtectedLayout>} />
         <Route path="*"          element={<Navigate to="/dashboard" replace />} />
       </Routes>

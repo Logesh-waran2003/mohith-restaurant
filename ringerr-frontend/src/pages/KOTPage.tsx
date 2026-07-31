@@ -13,6 +13,23 @@ const colConfig: Record<KDSCol, { label: string; color: string; bg: string; bord
   READY:     { label: 'Ready',      color: '#22C55E', bg: 'rgba(34,197,94,0.08)',  border: 'rgba(34,197,94,0.2)',  action: 'Mark Served ✓', next: 'SERVED'    },
 }
 
+// Web Audio API beep for new PENDING orders
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const osc  = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.frequency.value = 880
+    osc.type = 'sine'
+    gain.gain.setValueAtTime(0.3, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.3)
+  } catch { /* AudioContext not available */ }
+}
+
 function ElapsedTimer({ createdAt, status }: { createdAt?: string; status: KDSCol }) {
   const [min, setMin] = useState(0)
   useEffect(() => {
@@ -55,7 +72,8 @@ export default function KOTPage() {
   const [loading, setLoading] = useState(true)
   const [toast, setToast]     = useState<{ msg: string; type: 'success'|'error' } | null>(null)
   const [wsConnected, setWsConnected] = useState(false)
-  const stompRef = useRef<Client | null>(null)
+  const stompRef   = useRef<Client | null>(null)
+  const seenIdsRef = useRef<Set<number>>(new Set())
 
   const notify = (msg: string, type: 'success'|'error' = 'success') => {
     setToast({ msg, type })
@@ -66,7 +84,10 @@ export default function KOTPage() {
     try {
       setLoading(true)
       const all = await orderService.findAll()
-      setOrders(all.filter(o => ['PENDING','PREPARING','READY'].includes(o.status)))
+      const active = all.filter((o: Order) => ['PENDING','PREPARING','READY'].includes(o.status))
+      // Seed seenIdsRef so first WS message doesn't beep for already-loaded orders
+      active.forEach((o: Order) => seenIdsRef.current.add(o.id))
+      setOrders(active)
     } catch {
       notify('Failed to load orders', 'error')
     } finally {
@@ -84,6 +105,13 @@ export default function KOTPage() {
         client.subscribe('/topic/orders', (msg) => {
           try {
             const order: Order = JSON.parse(msg.body)
+
+            // Play beep only for brand-new PENDING orders
+            if (order.status === 'PENDING' && !seenIdsRef.current.has(order.id)) {
+              playBeep()
+            }
+            seenIdsRef.current.add(order.id)
+
             setOrders(prev => {
               const filtered = prev.filter(o => o.id !== order.id)
               if (['PENDING','PREPARING','READY'].includes(order.status)) {
@@ -106,7 +134,6 @@ export default function KOTPage() {
   const advance = async (order: Order, next: OrderStatus) => {
     try {
       await orderService.updateStatus(order.id, next)
-      // optimistic update — WS broadcast will confirm
       setOrders(prev => {
         const updated = prev.filter(o => o.id !== order.id)
         if (['PENDING','PREPARING','READY'].includes(next)) {
