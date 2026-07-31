@@ -18,7 +18,10 @@ public class SpaController {
         "/menu",
         "/tables",
         "/orders",
-        "/staff"
+        "/staff",
+        "/kitchen",
+        "/reports",
+        "/order/{token:[a-fA-F0-9\\-]{36}}"
     })
     public ResponseEntity<Resource> forwardToIndex(HttpServletRequest request) {
         Resource resource = new ClassPathResource("static/index.html");
