@@ -7,7 +7,7 @@ export const orderService = {
   findByStatus: (status: OrderStatus) => api.get<Order[]>(`/orders/status/${status}`).then(r => r.data),
   findById: (id: number) => api.get<Order>(`/orders/${id}`).then(r => r.data),
   create: (data: {
-    tableId: number; staffId?: number; notes?: string;
+    tableId: number; staffId?: number; notes?: string; orderType?: 'DINE_IN' | 'TAKEAWAY';
     items: { menuItemId: number; quantity: number; notes?: string }[]
   }) => api.post<Order>('/orders', data).then(r => r.data),
   updateStatus: (id: number, status: OrderStatus) =>

@@ -14,6 +14,7 @@ export interface MenuItem {
   category: Category
   imageUrl?: string
   available: boolean
+  veg: boolean
   createdAt?: string
 }
 
@@ -47,6 +48,8 @@ export interface OrderItem {
   notes?: string
 }
 
+export type OrderType = 'DINE_IN' | 'TAKEAWAY'
+
 export type OrderStatus = 'PENDING' | 'PREPARING' | 'READY' | 'SERVED' | 'PAID' | 'CANCELLED'
 
 export interface Order {
@@ -56,6 +59,7 @@ export interface Order {
   status: OrderStatus
   totalAmount: number
   notes?: string
+  orderType?: OrderType
   items: OrderItem[]
   createdAt?: string
   updatedAt?: string

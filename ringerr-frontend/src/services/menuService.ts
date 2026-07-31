@@ -15,11 +15,11 @@ export const menuItemService = {
   findByCategory: (categoryId: number) => api.get<MenuItem[]>(`/menu-items/category/${categoryId}`).then(r => r.data),
   create: (data: {
     name: string; description?: string; price: number;
-    categoryId: number; imageUrl?: string; available: boolean
+    categoryId: number; imageUrl?: string; available: boolean; veg?: boolean
   }) => api.post<MenuItem>('/menu-items', data).then(r => r.data),
   update: (id: number, data: {
     name: string; description?: string; price: number;
-    categoryId: number; imageUrl?: string; available: boolean
+    categoryId: number; imageUrl?: string; available: boolean; veg?: boolean
   }) => api.put<MenuItem>(`/menu-items/${id}`, data).then(r => r.data),
   toggleAvailability: (id: number) => api.patch<MenuItem>(`/menu-items/${id}/toggle-availability`).then(r => r.data),
   delete: (id: number) => api.delete(`/menu-items/${id}`),

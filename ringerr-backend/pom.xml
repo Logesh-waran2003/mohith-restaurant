@@ -171,6 +171,12 @@
       <version>1.4.6</version>
     </dependency>
 
+    <!-- Jackson JSR310 - LocalDateTime serialization -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+
     <!-- Test -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

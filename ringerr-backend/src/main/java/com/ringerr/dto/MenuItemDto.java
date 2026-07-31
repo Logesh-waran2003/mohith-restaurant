@@ -11,6 +11,7 @@ public class MenuItemDto {
     private CategoryDto category;
     private String imageUrl;
     private boolean available;
+    private boolean veg;
     private LocalDateTime createdAt;
 
     public Long getId() { return id; }
@@ -27,6 +28,8 @@ public class MenuItemDto {
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public boolean isAvailable() { return available; }
     public void setAvailable(boolean available) { this.available = available; }
+    public boolean isVeg() { return veg; }
+    public void setVeg(boolean veg) { this.veg = veg; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

@@ -71,6 +71,7 @@ public class OrderService {
         Order order = new Order();
         order.setTable(table);
         order.setNotes(req.getNotes());
+        order.setOrderType(req.getOrderType() != null ? req.getOrderType() : Order.OrderType.DINE_IN);
         order.setStatus(OrderStatus.PENDING);
 
         if (req.getStaffId() != null) {
@@ -152,6 +153,7 @@ public class OrderService {
             return oid;
         }).collect(Collectors.toList());
         dto.setItems(itemDtos);
+        dto.setOrderType(o.getOrderType());
         return dto;
     }
 }

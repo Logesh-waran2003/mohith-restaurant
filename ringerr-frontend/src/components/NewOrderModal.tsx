@@ -76,6 +76,7 @@ export default function NewOrderModal({ onClose, onCreated, preselectedTableId }
       await orderService.create({
         tableId: Number(tableId),
         notes: fullNotes || undefined,
+        orderType: platform === 'takeaway' ? 'TAKEAWAY' : 'DINE_IN',
         items: cart.map(e => ({ menuItemId: e.item.id, quantity: e.qty, notes: e.notes || undefined })),
       })
       onCreated()

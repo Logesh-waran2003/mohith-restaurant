@@ -1,5 +1,6 @@
 package com.ringerr.dto;
 
+import com.ringerr.entity.Order.OrderType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
@@ -8,6 +9,7 @@ public class OrderRequest {
     @NotNull private Long tableId;
     private Long staffId;
     private String notes;
+    private OrderType orderType = OrderType.DINE_IN;
     @NotNull private List<OrderItemRequest> items;
 
     public Long getTableId() { return tableId; }
@@ -16,6 +18,8 @@ public class OrderRequest {
     public void setStaffId(Long staffId) { this.staffId = staffId; }
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    public OrderType getOrderType() { return orderType; }
+    public void setOrderType(OrderType orderType) { this.orderType = orderType; }
     public List<OrderItemRequest> getItems() { return items; }
     public void setItems(List<OrderItemRequest> items) { this.items = items; }
 

@@ -28,6 +28,9 @@ public class MenuItem {
     private String imageUrl;
 
     @Column(nullable = false)
+    private boolean veg = true;
+
+    @Column(nullable = false)
     private boolean available = true;
 
     @Column(name = "created_at", updatable = false)
@@ -52,6 +55,8 @@ public class MenuItem {
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public boolean isAvailable() { return available; }
     public void setAvailable(boolean available) { this.available = available; }
+    public boolean isVeg() { return veg; }
+    public void setVeg(boolean veg) { this.veg = veg; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

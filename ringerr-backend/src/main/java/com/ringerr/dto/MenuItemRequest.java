@@ -12,6 +12,7 @@ public class MenuItemRequest {
     @NotNull private Long categoryId;
     private String imageUrl;
     private boolean available = true;
+    private boolean veg = true;
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -25,4 +26,6 @@ public class MenuItemRequest {
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public boolean isAvailable() { return available; }
     public void setAvailable(boolean available) { this.available = available; }
+    public boolean isVeg() { return veg; }
+    public void setVeg(boolean veg) { this.veg = veg; }
 }

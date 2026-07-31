@@ -11,6 +11,7 @@ import java.util.List;
 public class Order {
 
     public enum OrderStatus { PENDING, PREPARING, READY, SERVED, PAID, CANCELLED }
+    public enum OrderType { DINE_IN, TAKEAWAY }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +33,10 @@ public class Order {
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
     private String notes;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_type", nullable = false)
+    private OrderType orderType = OrderType.DINE_IN;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
@@ -65,6 +70,8 @@ public class Order {
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    public OrderType getOrderType() { return orderType; }
+    public void setOrderType(OrderType orderType) { this.orderType = orderType; }
     public List<OrderItem> getItems() { return items; }
     public void setItems(List<OrderItem> items) { this.items = items; }
     public LocalDateTime getCreatedAt() { return createdAt; }

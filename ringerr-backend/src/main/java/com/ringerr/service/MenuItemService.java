@@ -60,6 +60,7 @@ public class MenuItemService {
         item.setCategory(category);
         item.setImageUrl(req.getImageUrl());
         item.setAvailable(req.isAvailable());
+        item.setVeg(req.isVeg());
         return toDto(menuItemRepository.save(item));
     }
 
@@ -75,6 +76,7 @@ public class MenuItemService {
         item.setCategory(category);
         item.setImageUrl(req.getImageUrl());
         item.setAvailable(req.isAvailable());
+        item.setVeg(req.isVeg());
         return toDto(menuItemRepository.save(item));
     }
 
@@ -100,6 +102,7 @@ public class MenuItemService {
         dto.setCategory(categoryService.toDto(item.getCategory()));
         dto.setImageUrl(item.getImageUrl());
         dto.setAvailable(item.isAvailable());
+        dto.setVeg(item.isVeg());
         dto.setCreatedAt(item.getCreatedAt());
         return dto;
     }

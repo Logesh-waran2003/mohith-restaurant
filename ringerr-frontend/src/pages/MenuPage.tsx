@@ -20,7 +20,7 @@ export default function MenuPage() {
   const [editItem, setEditItem]     = useState<MenuItem | null>(null)
   const [saving, setSaving]         = useState(false)
   const [form, setForm] = useState({
-    name: '', description: '', price: '', categoryId: '', available: true
+    name: '', description: '', price: '', categoryId: '', available: true, veg: true
   })
 
   const notify = (msg: string, type: 'success'|'error' = 'success') => {
@@ -48,12 +48,16 @@ export default function MenuPage() {
 
   const filtered = items.filter(item =>
     (activeCategory === 'all' || item.category?.id === activeCategory) &&
-    (search === '' || item.name.toLowerCase().includes(search.toLowerCase())) 
+    (search === '' || item.name.toLowerCase().includes(search.toLowerCase()))
+  )
+
+  const vegFilteredItems = filtered.filter(item =>
+    vegFilter === 'all' || (vegFilter === 'veg' ? item.veg : !item.veg)
   )
 
   const openAdd = () => {
     setEditItem(null)
-    setForm({ name: '', description: '', price: '', categoryId: categories[0]?.id?.toString() || '', available: true })
+    setForm({ name: '', description: '', price: '', categoryId: categories[0]?.id?.toString() || '', available: true, veg: true })
     setShowModal(true)
   }
 
@@ -65,6 +69,7 @@ export default function MenuPage() {
       price: String(item.price),
       categoryId: String(item.category?.id || ''),
       available: item.available,
+      veg: item.veg,
     })
     setShowModal(true)
   }
@@ -79,6 +84,7 @@ export default function MenuPage() {
         price: Number(form.price),
         categoryId: Number(form.categoryId),
         available: form.available,
+        veg: form.veg,
       }
       if (editItem) {
         const updated = await menuItemService.update(editItem.id, payload)
@@ -105,6 +111,7 @@ export default function MenuPage() {
         price: item.price,
         categoryId: item.category?.id,
         available: !item.available,
+        veg: item.veg,
       })
       setItems(is => is.map(i => i.id === item.id ? updated : i))
     } catch {
@@ -202,7 +209,7 @@ export default function MenuPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtered.map(item => (
+          {vegFilteredItems.map(item => (
             <div key={item.id} className="card card-hover flex flex-col overflow-hidden"
               style={{ opacity: item.available ? 1 : 0.6 }}>
               {/* Image placeholder */}
@@ -257,7 +264,7 @@ export default function MenuPage() {
         </div>
       )}
 
-      {filtered.length === 0 && !loading && (
+      {vegFilteredItems.length === 0 && !loading && (
         <div className="text-center py-20">
           <div className="text-4xl mb-3">🍽️</div>
           <p className="text-sm" style={{ color: '#9CA3AF' }}>No items found</p>
@@ -309,6 +316,14 @@ export default function MenuPage() {
                 </button>
                 <span className="text-sm" style={{ color: '#9CA3AF' }}>
                   {form.available ? 'Available' : 'Unavailable'}
+                </span>
+                <button onClick={() => setForm(f => ({ ...f, veg: !f.veg }))} className="transition-all ml-4">
+                  {form.veg
+                    ? <ToggleRight size={24} style={{ color: '#22C55E' }} />
+                    : <ToggleLeft size={24} style={{ color: '#EF4444' }} />}
+                </button>
+                <span className="text-sm" style={{ color: form.veg ? '#22C55E' : '#EF4444' }}>
+                  {form.veg ? '🟢 Veg' : '🔴 Non-Veg'}
                 </span>
               </div>
             </div>
